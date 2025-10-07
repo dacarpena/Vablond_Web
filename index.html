@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vablond · Gestión de residuos en Almería (MARPOL, SANDACH, LER)</title>
+  <meta name="description" content="Transporte y gestión de residuos en Almería y Andalucía Oriental. MARPOL Anexo V, SANDACH (cat. 1–3) y LER. Documentación CAE, trazabilidad y servicio 24/7.">
+  <link rel="canonical" href="https://www.vablond.com/">
+  <meta name="theme-color" content="#d12525">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vablond">
+  <meta property="og:title" content="Gestión de residuos en Almería · Vablond">
+  <meta property="og:description" content="MARPOL, SANDACH y LER con trazabilidad 100%. Documentación CAE y servicio 24/7.">
+  <meta property="og:image" content="/assets/img/og-vablond.jpg">
+  <meta property="og:url" content="https://www.vablond.com/">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Icons -->
+  <link rel="icon" href="/assets/img/LOGO_VABLOND.png" type="image/png" sizes="any">
+  <link rel="apple-touch-icon" href="/assets/img/LOGO_VABLOND.png">
+
+  <!-- Fonts & CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rubik:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS + JS (JS fixed with defer) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <!-- AOS (Animate On Scroll) -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+  <!-- Tailwind for styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Sistema de cookies -->
+  <link rel="stylesheet" href="/css/cookies.css">
+
+  <style>
+    :root{--brand:#d12525;--brand-600:#c22121;--brand-700:#a01c1c;--ink:#0b0b0b;--muted:#5b616e;--line:rgba(0,0,0,.08);--surface:#fff;--radius:16px}
+    html{scroll-behavior:smooth}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;overflow-x:hidden}
+    .h-font{font-family:Rubik,Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .card{border-radius:var(--radius);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.06);background:var(--surface);transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),opacity 0.3s ease-out;opacity:0;transform:translateY(20px);will-change:transform,opacity}
+    .card.visible{opacity:1;transform:translateY(0)}
+    .card:hover{transform:translateY(-5px) scale(1.01) !important;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:9999px;padding:.8rem 1.2rem;font-weight:600;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);text-decoration:none;border:none;cursor:pointer;min-height:44px;transform:translateZ(0);backface-visibility:hidden;-webkit-font-smoothing:subpixel-antialiased;will-change:transform,box-shadow}
+    .btn-primary{background:var(--brand);color:#fff;box-shadow:0 4px 6px -1px rgba(209,37,37,0.1),0 2px 4px -1px rgba(209,37,37,0.06);position:relative;overflow:hidden}
+    .btn-primary:hover{background:var(--brand-600);transform:translateY(-2px) scale(1.02);box-shadow:0 10px 15px -3px rgba(209,37,37,0.1),0 4px 6px -2px rgba(209,37,37,0.05)}
+    .btn-primary:active{transform:translateY(0) scale(0.98);box-shadow:0 1px 3px 0 rgba(0,0,0,0.1),0 1px 2px 0 rgba(0,0,0,0.06)}
+    .btn-ghost{border:1px solid var(--line);background:transparent;color:var(--ink);position:relative;overflow:hidden}
+    .btn-ghost:hover{background:rgba(0,0,0,.03);transform:translateY(-1px);box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.03)}
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.98);backdrop-filter:saturate(160%) blur(12px);border-bottom:1px solid var(--line);box-shadow:0 1px 3px rgba(0,0,0,.03);min-height:5rem;display:flex;align-items:center;transition:all 0.3s ease}
+    .topbar.scrolled{background:rgba(255,255,255,.95);box-shadow:0 4px 20px rgba(0,0,0,.08);min-height:4.5rem}
+    .navbar-container{max-width:1400px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;width:100%;height:100%}
+    @media (min-width: 640px) {.navbar-container{padding:0 2rem}}
+    @media (min-width: 1024px) {.navbar-container{padding:0 2.5rem}}
+    .eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:.76rem;color:var(--brand-700);font-weight:700}
+    .badge{border-radius:9999px;padding:.25rem .6rem;background:#fff2f2;color:var(--brand-700);border:1px solid #ffe3e3;font-weight:600;font-size:.8rem}
+    .kpi{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .7rem;border-radius:9999px;border:1px solid #ffe3e3;background:#fff2f2;color:var(--brand-700);font-weight:600;font-size:.8rem}
+    :focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+    .logo-wrap{display:flex;align-items:center;position:relative;z-index:10;padding:0.5rem;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);outline:none;overflow:visible}
+    .logo-wrap img{height:4.5rem;width:auto;object-fit:contain;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);filter:drop-shadow(0 0 0 transparent)}
+    .logo-wrap:hover{transform:translateY(-2px)}
+    .logo-wrap:hover img{transform:scale(1.05);filter:drop-shadow(0 4px 12px rgba(209,37,37,0.15))}
+    .logo-wrap:active{transform:translateY(0) scale(0.98)}
+    .logo-wrap:active img{filter:drop-shadow(0 2px 6px rgba(209,37,37,0.2))}
+    .logo-wrap:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+    .logo-wrap:focus-visible img{filter:drop-shadow(0 4px 12px rgba(209,37,37,0.15))}
+    .topbar.scrolled .logo-wrap img{height:3.5rem}
+    .topbar.scrolled .logo-wrap{padding:0.25rem}
+    .nav-links{display:flex;align-items:center;gap:2rem;font-size:0.95rem;font-weight:500}
+    .nav-links a{position:relative;padding:0.75rem 1rem;border-radius:8px;transition:all 0.3s ease;color:var(--ink);text-decoration:none}
+    .nav-links a:hover{color:var(--brand-700);background:rgba(209,37,37,0.05)}
+    .nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:var(--brand);transition:all 0.3s ease;transform:translateX(-50%)}
+    .nav-links a:hover::after{width:80%}
+    .nav-cta{display:flex;align-items:center;gap:1rem}
+    .phone-link{font-size:0.9rem;font-weight:600;color:var(--brand-700);text-decoration:none;padding:0.5rem 1rem;border-radius:8px;transition:all 0.3s ease}
+    .phone-link:hover{background:rgba(209,37,37,0.1);transform:translateY(-1px)}
+    @media (max-width: 1023px) {
+      .nav-links, .nav-cta .phone-link{display:none}
+      .logo-wrap img{height:3rem}
+    }
+    .fab {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      border-radius: 9999px;
+      padding: 0.8rem 1.4rem;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(209, 37, 37, 0.3);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateY(150px);
+      opacity: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      overflow: hidden;
+    }
+    .fab::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(45deg, rgba(255,255,255,0.2), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s cubic-bezier(0.2, 1, 0.3, 1);
+    }
+    .fab.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .fab.hidden-scroll {
+      transform: translateY(100px) scale(0.9);
+      opacity: 0;
+    }
+    .fab:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 14px 32px rgba(209, 37, 37, 0.35);
+    }
+    .fab:hover::before {
+      transform: translateX(100%);
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 16px 40px rgba(209, 37, 37, 0.4);
+    }
+    .fab:active {
+      transform: translateY(0) scale(0.98) !important;
+      box-shadow: 0 4px 12px rgba(209, 37, 37, 0.3);
+    }
+    .fab .icon {
+      transition: transform 0.3s ease-in-out;
+    }
+    .fab:hover .icon {
+      animation: bounce 1s infinite;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(209, 37, 37, 0.7); }
+      70% { box-shadow: 0 0 0 12px rgba(209, 37, 37, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(209, 37, 37, 0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    @media (max-width: 480px) {
+      .fab {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        padding: 1rem 1.5rem;
+        justify-content: center;
+      }
+    }
+    input,textarea,select{font-size:16px !important;transition:border-color .2s,box-shadow .2s}
+    input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(209,37,37,.1)}
+    /* Fallback de altura para el mapa por si Tailwind no carga */
+    #map { min-height: 320px; height: 20rem; width: 100%; }
+    /* Fix z-index para Leaflet map */
+    .leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer { z-index: 1 !important; }
+    .leaflet-control-container { z-index: 10 !important; }
+  </style>
+</head>
+<body class="bg-white text-[color:var(--ink)]">
+  <header class="topbar" role="banner" aria-label="Barra superior">
+    <div class="navbar-container">
+      <a href="#inicio" class="logo-wrap focus:outline-none" aria-label="Inicio Vablond">
+        <img src="/assets/img/LOGO_VABLOND.png" alt="Vablond - Gestión y transporte de residuos">
+      </a>
+      
+      <nav class="nav-links hidden lg:flex" role="navigation" aria-label="Navegación principal">
+        <a href="#servicios">Servicios</a>
+        <a href="#sectores">Sectores</a>
+        <a href="#cumplimiento">Cumplimiento</a>
+        <a href="#cobertura">Cobertura</a>
+      </nav>
+      
+      <div class="nav-cta">
+        <a href="tel:950821010" class="phone-link hidden lg:block">950 82 10 10</a>
+        <a href="#contacto" class="btn btn-primary text-sm">Solicitar recogida</a>
+        <a href="https://wa.me/34950821010?text=Hola%20Vablond,%20necesito%20gestionar%20residuos" class="btn btn-ghost text-sm flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.966-.273-.099-.471-.148-.67.15-.197.297-.767.963-.94 1.16-.173.199-.347.221-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.795-1.484-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.136-.133.299-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.508-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.501.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.005-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.549 4.142 1.595 5.945L0 24l6.335-1.652a11.882 11.882 0 005.723 1.467h.005c6.554 0 11.89-5.335 11.89-11.893 0-3.189-1.265-6.188-3.558-8.453"/>
+          </svg>
+          <span class="hidden sm:inline">WhatsApp</span>
+        </a>
+        <button id="menuBtn" class="lg:hidden btn btn-ghost p-2 ml-2" aria-expanded="false" aria-controls="mnav">
+          <span class="sr-only">Abrir menú</span>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div id="mnav" class="lg:hidden hidden border-t bg-white shadow-lg" role="navigation">
+      <div class="navbar-container py-4">
+        <div class="grid gap-2">
+          <a href="#servicios" class="block py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">Servicios</a>
+          <a href="#sectores" class="block py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">Sectores</a>
+          <a href="#cumplimiento" class="block py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">Cumplimiento</a>
+          <a href="#cobertura" class="block py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium">Cobertura</a>
+          <div class="border-t pt-4 mt-4 space-y-3">
+            <a href="#contacto" class="btn btn-primary w-full">Solicitar recogida</a>
+            <div class="grid grid-cols-2 gap-3">
+              <a href="tel:950821010" class="btn btn-ghost flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 22.621l-3.521-6.795c-.008.004-1.974.97-2.064 1.011-2.24 1.086-6.799-7.82-4.609-8.994l2.083-1.026-3.493-6.817-2.106 1.039c-7.202 3.755 4.233 25.982 11.6 22.615.121-.055 2.102-1.029 2.11-1.033z"/>
+                </svg>
+                Llamar
+              </a>
+              <a href="https://wa.me/34950821010?text=Hola%20Vablond,%20necesito%20gestionar%20residuos" class="btn btn-ghost flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.966-.273-.099-.471-.148-.67.15-.197.297-.767.963-.94 1.16-.173.199-.347.221-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.795-1.484-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.136-.133.299-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.508-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.501.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.005-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.549 4.142 1.595 5.945L0 24l6.335-1.652a11.882 11.882 0 005.723 1.467h.005c6.554 0 11.89-5.335 11.89-11.893 0-3.189-1.265-6.188-3.558-8.453"/>
+                </svg>
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="inicio" class="pt-8 sm:pt-12 bg-gradient-to-b from-[#fff2f2] to-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center py-10 sm:py-16">
+      <div class="text-center lg:text-left" data-aos="fade-up" data-aos-duration="800">
+        <span class="badge inline-block" data-aos="fade-up" data-aos-delay="100">MARPOL · SANDACH · LER</span>
+        <h1 class="h-font text-4xl lg:text-5xl font-semibold leading-tight mt-4 sm:mt-6" data-aos="fade-up" data-aos-delay="200">
+          Gestión de residuos en Almería <span class="text-[color:var(--brand-700)] block sm:inline">rápida, documentada y trazable</span>
+        </h1>
+        <p class="text-lg text-neutral-700 mt-4 sm:mt-6 max-w-2xl mx-auto lg:mx-0" data-aos="fade-up" data-aos-delay="300">
+          Contenedores 5–30 m³, servicio 24/7 bajo aviso y entrega de documentación (DI/NT, albaranes y certificados). Operativa en puerto (MARPOL) y en industria (SANDACH + no peligrosos).
+        </p>
+        <div class="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="400">
+          <a href="#contacto" class="btn btn-primary">Contactar ahora</a>
+          <a href="#servicios" class="btn btn-ghost">Ver servicios</a>
+        </div>
+        <div class="mt-4 sm:mt-6 flex flex-wrap gap-2 sm:gap-3 justify-center lg:justify-start" data-aos="fade-up" data-aos-delay="500">
+          <span class="kpi">24/7</span>
+          <span class="kpi">Trazabilidad</span>
+          <span class="kpi">CAE</span>
+        </div>
+        <p class="text-sm text-neutral-600 mt-3">✔ Empresa autorizada. Nº de gestor/transportista (Junta de Andalucía) — <b>añadir cuando esté disponible</b>.</p>
+      </div>
+      <div class="grid gap-4 sm:gap-6 mt-8 lg:mt-0" data-aos="fade-left" data-aos-duration="800">
+        <div class="card p-5" data-aos="fade-up" data-aos-delay="200"><h3 class="h-font font-semibold text-lg mb-2">⛴️ MARPOL & Puertos</h3><p class="text-neutral-700">Recogida Anexo V y otros flujos autorizados. Coordinación con consignatarios y Autoridad Portuaria.</p></div>
+        <div class="card p-5" data-aos="fade-up" data-aos-delay="300"><h3 class="h-font font-semibold text-lg mb-2">♻️ SANDACH & No peligrosos</h3><p class="text-neutral-700">Rutas dedicadas y documentación completa por LER. Entrega en planta con certificado.</p></div>
+        <div class="card p-5" data-aos="fade-up" data-aos-delay="400"><h3 class="h-font font-semibold text-lg mb-2">🧾 Reportes</h3><p class="text-neutral-700">Informes mensuales: contenedores, pesajes y destinos. Exportables en PDF.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="servicios" class="py-16 lg:py-24 bg-gradient-to-b from-white to-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <p class="eyebrow mb-2" data-aos="fade-up">Qué hacemos</p>
+        <h2 class="h-font text-3xl lg:text-4xl font-semibold mb-4" data-aos="fade-up" data-aos-delay="100">Nuestros Servicios</h2>
+        <div class="w-20 h-1 bg-red-600 mx-auto rounded-full mb-8" data-aos="fade-up" data-aos-delay="150"></div>
+      </div>
+      
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8" data-aos="fade-up" data-aos-delay="200">
+        <!-- MARPOL & Puertos -->
+        <div class="group card p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-4 text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+              <path d="M12 2a8 8 0 0 0-8 8c0 2 1 3 1 3h14s1-1 1-3a8 8 0 0 0-8-8z"></path>
+              <path d="M12 2v8"></path>
+              <path d="M8 6h8"></path>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-xl mb-3 text-gray-900 group-hover:text-red-700 transition-colors">MARPOL & Puertos</h3>
+          <p class="text-gray-600 mb-4">Gestión integral de residuos en puertos según el Anexo V MARPOL. Coordinación con consignatarios y entrega de justificantes de entrega.</p>
+          <a href="#contacto" class="inline-flex items-center text-red-600 font-medium group-hover:text-red-700 transition-colors">
+            Solicitar retirada
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- SANDACH & No Peligrosos -->
+        <div class="group card p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+              <path d="M12 14v4"></path>
+              <path d="M10 18h4"></path>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-xl mb-3 text-gray-900 group-hover:text-green-700 transition-colors">SANDACH & No Peligrosos</h3>
+          <p class="text-gray-600 mb-4">Transporte y gestión de subproductos animales (categorías 1-3) y residuos no peligrosos con toda la documentación sanitaria requerida.</p>
+          <a href="#contacto" class="inline-flex items-center text-green-600 font-medium group-hover:text-green-700 transition-colors">
+            Planificar ruta
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- Reportes y Documentación -->
+        <div class="group card p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 8 9 8 13"></polyline>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-xl mb-3 text-gray-900 group-hover:text-blue-700 transition-colors">Reportes & Documentación</h3>
+          <p class="text-gray-600 mb-4">Generación de informes, gestión de CAE, contratos, DI/NT, albaranes y certificados. Todo el soporte documental que necesitas.</p>
+          <a href="#contacto" class="inline-flex items-center text-blue-600 font-medium group-hover:text-blue-700 transition-colors">
+            Solicitar documentación
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- Contenedores -->
+        <div class="group card p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center mb-4 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="M2 10h20"></path>
+              <path d="M2 14h20"></path>
+              <path d="M9 18h6"></path>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-xl mb-3 text-gray-900 group-hover:text-amber-700 transition-colors">Contenedores 5–30 m³</h3>
+          <p class="text-gray-600 mb-4">Ubicación en obra/industria, retirada planificada o bajo demanda y optimización de rutas para máxima eficiencia.</p>
+          <a href="#contacto" class="inline-flex items-center text-amber-600 font-medium group-hover:text-amber-700 transition-colors">
+            Pedir contenedor
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- Gestión Integral -->
+        <div class="group card p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3h18v18H3z"></path>
+              <path d="M3 9h18M9 9v12m6-12v12"></path>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-xl mb-3 text-gray-900 group-hover:text-purple-700 transition-colors">Gestión Integral</h3>
+          <p class="text-gray-600 mb-4">Soluciones completas para residuos peligrosos, no peligrosos, lodos y residuos especiales líquidos o sólidos.</p>
+          <a href="#contacto" class="inline-flex items-center text-purple-600 font-medium group-hover:text-purple-700 transition-colors">
+            Solicitar presupuesto
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- Emergencias 24/7 -->
+        <div class="group card p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <div class="w-14 h-14 bg-rose-100 rounded-xl flex items-center justify-center mb-4 text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 8v4l3 3"></path>
+              <path d="M12 16h.01"></path>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-xl mb-3 text-gray-900 group-hover:text-rose-700 transition-colors">Emergencias 24/7</h3>
+          <p class="text-gray-600 mb-4">Servicios críticos bajo aviso con respuesta rápida. Disponibilidad total para atender tus necesidades urgentes.</p>
+          <a href="#contacto" class="inline-flex items-center text-rose-600 font-medium group-hover:text-rose-700 transition-colors">
+            Atención urgente
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sectores" class="py-16 lg:py-24 bg-[#fff2f2]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <p class="eyebrow mb-2">A quién ayudamos</p>
+      <h2 class="h-font text-3xl lg:text-4xl font-semibold mb-10">Sectores</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="card p-6"><h3 class="h-font font-semibold text-lg mb-2">Puertos y consignatarios</h3><p class="text-neutral-700">MARPOL Anexo V, coordinación en muelle y documentación para tasas.</p></div>
+        <div class="card p-6"><h3 class="h-font font-semibold text-lg mb-2">Industria y logística</h3><p class="text-neutral-700">Contenerización, rutas y KPI de servicio con reporting mensual.</p></div>
+        <div class="card p-6"><h3 class="h-font font-semibold text-lg mb-2">Ayuntamientos y obras</h3><p class="text-neutral-700">Campañas, obras y eventos con contenedores y retirada integral.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cumplimiento" class="py-16 lg:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <p class="eyebrow mb-2">Normativa</p>
+      <h2 class="h-font text-3xl lg:text-4xl font-semibold mb-10">Cumplimiento y certificación</h2>
+      <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="space-y-6">
+          <div class="card p-5"><h3 class="h-font font-semibold text-lg mb-2">Marco regulatorio</h3><p class="text-neutral-700">Operación conforme a LER, MARPOL (Anexo V) y SANDACH (cat. 1–3). CAE y PRL (RD 171/2004).</p></div>
+          <div class="card p-5"><h3 class="h-font font-semibold text-lg mb-2">Documentación</h3><p class="text-neutral-700">Contratos, DI/NT, albaranes y certificados de entrega en planta con trazabilidad.</p></div>
+          <div class="card p-5"><h3 class="h-font font-semibold text-lg mb-2">Calidad del servicio</h3><p class="text-neutral-700">Puntualidad, incidencias y valorización con informes mensuales.</p></div>
+        </div>
+        <div class="card p-6">
+          <h3 class="h-font font-semibold text-lg mb-4">Preguntas frecuentes</h3>
+          <div class="space-y-3">
+            <details class="group"><summary class="font-medium cursor-pointer py-2 hover:text-[color:var(--brand-700)]">¿Qué códigos LER gestionáis?</summary><p class="text-neutral-700 mt-2 pl-4">Peligrosos, no peligrosos y SANDACH (cat. 1–3). Solicita listado por actividad.</p></details>
+            <details class="group"><summary class="font-medium cursor-pointer py-2 hover:text-[color:var(--brand-700)]">¿Entregáis documentación CAE?</summary><p class="text-neutral-700 mt-2 pl-4">Sí, con pólizas, formación, matrículas y planes de prevención.</p></details>
+            <details class="group"><summary class="font-medium cursor-pointer py-2 hover:text-[color:var(--brand-700)]">¿Cobertura geográfica?</summary><p class="text-neutral-700 mt-2 pl-4">Almería y Andalucía Oriental con capacidad nacional vía partners.</p></details>
+            <details class="group"><summary class="font-medium cursor-pointer py-2 hover:text-[color:var(--brand-700)]">¿Cómo puedo darme de alta?</summary><p class="text-neutral-700 mt-2 pl-4">Solicita retirada mediante nuestro formulario o accede al Área clientes si ya tienes contrato.</p></details>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cobertura" class="py-16 lg:py-24 bg-[#fff2f2]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <p class="eyebrow mb-2">Dónde operamos</p>
+      <h2 class="h-font text-3xl lg:text-4xl font-semibold mb-10">Cobertura y logística</h2>
+      <div class="grid lg:grid-cols-3 gap-6 mb-6">
+        <div class="card p-6"><h3 class="h-font font-semibold text-lg mb-2">Andalucía Oriental</h3><p class="text-neutral-700">Provincia de Almería y puertos asociados.</p></div>
+        <div class="card p-6"><h3 class="h-font font-semibold text-lg mb-2">Rutas planificadas</h3><p class="text-neutral-700">Periódicas y bajo demanda con optimización.</p></div>
+        <div class="card p-6"><h3 class="h-font font-semibold text-lg mb-2">Trazabilidad</h3><p class="text-neutral-700">Identificación por LER, pesajes y certificados.</p></div>
+      </div>
+      <div id="map" class="h-80 rounded-2xl border"></div>
+    </div>
+  </section>
+
+  <section id="contacto" class="py-16 lg:py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <p class="eyebrow mb-2" data-aos="fade-up">Contacto</p>
+        <h2 class="h-font text-3xl lg:text-4xl font-semibold mb-4" data-aos="fade-up" data-aos-delay="100">¿Cómo podemos ayudarte?</h2>
+        <div class="w-20 h-1 bg-red-600 mx-auto rounded-full mb-8" data-aos="fade-up" data-aos-delay="150"></div>
+        <p class="text-lg text-neutral-700 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">Estamos disponibles para atender tus consultas por teléfono o email</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="card p-6 text-center" data-aos="fade-up" data-aos-delay="200">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 22.621l-3.521-6.795c-.008.004-1.974.97-2.064 1.011-2.24 1.086-6.799-7.82-4.609-8.994l2.083-1.026-3.493-6.817-2.106 1.039c-7.202 3.755 4.233 25.982 11.6 22.615.121-.055 2.102-1.029 2.11-1.033z"/>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-lg mb-3">Teléfono</h3>
+          <a href="tel:950821010" class="text-2xl font-bold text-red-600 hover:text-red-700 transition-colors">950 82 10 10</a>
+          <p class="text-sm text-neutral-600 mt-2">Disponible 24/7</p>
+        </div>
+        <div class="card p-6 text-center" data-aos="fade-up" data-aos-delay="300">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-lg mb-3">Email</h3>
+          <a href="mailto:comercial@vablond.com" class="text-red-600 hover:text-red-700 transition-colors font-medium break-all">comercial@vablond.com</a>
+          <p class="text-sm text-neutral-600 mt-2">Respuesta en 24h</p>
+        </div>
+        <div class="card p-6 text-center" data-aos="fade-up" data-aos-delay="400">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.966-.273-.099-.471-.148-.67.15-.197.297-.767.963-.94 1.16-.173.199-.347.221-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.795-1.484-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.136-.133.299-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.508-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.501.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.005-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.549 4.142 1.595 5.945L0 24l6.335-1.652a11.882 11.882 0 005.723 1.467h.005c6.554 0 11.89-5.335 11.89-11.893 0-3.189-1.265-6.188-3.558-8.453"/>
+            </svg>
+          </div>
+          <h3 class="h-font font-semibold text-lg mb-3">WhatsApp</h3>
+          <a href="https://wa.me/34950821010?text=Hola%20Vablond,%20necesito%20gestionar%20residuos" class="inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 transition-colors font-medium">Enviar mensaje</a>
+          <p class="text-sm text-neutral-600 mt-2">Chat directo</p>
+        </div>
+      </div>
+      <div class="card p-6 text-center max-w-2xl mx-auto mt-8" data-aos="fade-up" data-aos-delay="500">
+        <h3 class="h-font font-semibold text-lg mb-3">📍 Dirección</h3>
+        <p class="text-neutral-700">Vablond S.L. · CIF B44740223</p>
+        <p class="text-neutral-700">Avda. Vega de Acá 37, 3F · 04007 Almería</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid sm:grid-cols-2 gap-6 items-start text-sm text-neutral-700">
+      <div class="text-center sm:text-left">
+        <p class="font-semibold text-neutral-900 h-font text-base mb-2">Vablond S.L.</p>
+        <p class="mb-1">CIF B44740223</p>
+        <p class="mb-1">Avda. Vega de Acá 37, 3F</p>
+        <p class="mb-3">04007 Almería</p>
+        <div class="space-y-1">
+          <p><a href="tel:950821010" class="hover:text-red-600">Tel. 950 82 10 10</a></p>
+          <p><a href="mailto:comercial@vablond.com" class="hover:text-red-600 break-all">comercial@vablond.com</a></p>
+          <p class="text-neutral-500">www.vablond.com</p>
+        </div>
+      </div>
+      <div class="text-center sm:text-right">
+        <p class="mb-2">© <span id="year"></span> Vablond S.L.</p>
+        <p class="text-neutral-500 mb-3">Todos los derechos reservados</p>
+        <div class="flex flex-col sm:items-end gap-2">
+          <a href="/legal/privacidad.html" class="text-neutral-600 hover:text-red-600 text-xs">Protección de datos</a>
+          <a href="/legal/aviso-legal.html" class="text-neutral-600 hover:text-red-600 text-xs">Aviso legal</a>
+          <a href="/legal/cookies.html" class="text-neutral-600 hover:text-red-600 text-xs">Política de cookies</a>
+          <a href="#" id="cookie-settings-link" class="text-neutral-600 hover:text-red-600 text-xs">Configurar cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <button type="button" class="fab" id="floatingBtn" aria-label="Solicitar recogida rápida" data-aos="fade-up" data-aos-delay="300" data-aos-offset="-200">
+    <span class="font-medium">Recogida</span>
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+    </svg>
+  </button>
+
+  <!-- App JS (con init de Leaflet simplificado) -->
+  <script src="/js/app.js" defer></script>
+  <!-- Sistema de cookies -->
+  <script src="/js/cookies.js" defer></script>
+  
+  <script>
+    // Inicializar AOS (Animate On Scroll)
+    document.addEventListener('DOMContentLoaded', function() {
+      AOS.init({
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: true,
+        disable: 'mobile'
+      });
+      
+      // Mostrar botón flotante después de cargar la página
+      setTimeout(() => {
+        const fab = document.getElementById('floatingBtn');
+        if (fab) fab.classList.add('visible');
+      }, 1500);
+      
+      // Observar elementos con clase 'card' para animaciones al hacer scroll
+      const cards = document.querySelectorAll('.card');
+      const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            cardObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      cards.forEach(card => {
+        cardObserver.observe(card);
+      });
+      
+      // Suavizar scroll para enlaces internos
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            e.preventDefault();
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // Cerrar menú móvil si está abierto
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mnav');
+            if (menuBtn && mobileMenu && !mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+              menuBtn.setAttribute('aria-expanded', 'false');
+            }
+          }
+        });
+      });
+    });
+  </script>
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"LocalBusiness",
+    "name":"Vablond S.L.",
+    "url":"https://www.vablond.com",
+    "logo":"https://www.vablond.com/assets/img/LOGO_VABLOND.png",
+    "image":"https://www.vablond.com/assets/img/og-vablond.jpg",
+    "telephone":"+34950821010",
+    "email":"comercial@vablond.com",
+    "address": {
+      "@type":"PostalAddress",
+      "streetAddress":"Avda. Vega de Acá 37, 3F",
+      "addressLocality":"Almería",
+      "postalCode":"04007",
+      "addressCountry":"ES"
+    },
+    "openingHours":"Mo-Fr 08:00-18:00",
+    "areaServed":["Almería","Andalucía Oriental","Puertos andaluces"]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"¿Qué códigos LER gestionáis?","acceptedAnswer":{"@type":"Answer","text":"Peligrosos, no peligrosos y SANDACH (cat. 1–3). Listado bajo demanda."}},
+      {"@type":"Question","name":"¿Entregáis documentación CAE?","acceptedAnswer":{"@type":"Answer","text":"Sí. Pólizas, formación, matrículas y planes."}},
+      {"@type":"Question","name":"¿Cobertura geográfica?","acceptedAnswer":{"@type":"Answer","text":"Almería y Andalucía Oriental con capacidad nacional vía partners."}},
+      {"@type":"Question","name":"¿Cómo puedo darme de alta?","acceptedAnswer":{"@type":"Answer","text":"Solicita una retirada mediante nuestro formulario o accede al Área de clientes si ya tienes contrato."}}]
+  }
+  </script>
+</body>
+</html>
